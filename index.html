@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr-BE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Al banco">
+<meta name="theme-color" content="#2B1C15">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Al banco</title>
+<style>
+:root{
+  --encre:#2B1C15; --papier:#F5EEE3; --carte:#FFFDF9; --trait:#E3D6C6;
+  --doux:#7A6758; --espresso:#2B1C15; --lait:#FBF6F0; --menthe:#2FB98A;
+  --ambre:#E39A1E; --rouge:#D8453A; --r:12px;
+}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;padding:0}
+body{
+  background:var(--papier); color:var(--encre);
+  font:400 17px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  -webkit-text-size-adjust:100%;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom));
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--menthe);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* Bandeau : l'anneau du reste */
+header{background:var(--espresso);color:var(--lait);
+  padding:calc(18px + env(safe-area-inset-top)) 18px 22px}
+.entete{display:flex;justify-content:space-between;align-items:center;gap:8px;max-width:640px;margin:0 auto}
+header h1{font-size:28px;line-height:1.1;margin:0;font-weight:700}
+.mois{display:flex;align-items:center;gap:4px}
+.mois button{width:44px;height:44px;border:0;border-radius:10px;background:rgba(255,255,255,.08);color:var(--lait);font-size:22px}
+.mois button:disabled{opacity:.3}
+#titreMois{font-size:17px;color:#E2D3C6;text-align:center;margin:4px 0 0}
+.anneau{position:relative;width:min(72vw,260px);aspect-ratio:1;margin:14px auto 6px}
+.anneau svg{width:100%;height:100%;transform:rotate(-90deg)}
+#arc{transition:stroke-dashoffset .6s ease}
+@media (prefers-reduced-motion:reduce){#arc{transition:none}}
+.anneau .centre{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+#reste{font-size:clamp(34px,10vw,46px);font-weight:700;line-height:1}
+#resteSous{font-size:15px;color:#E2D3C6;margin-top:6px}
+.chiffres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:640px;margin:10px auto 0}
+.chiffres div{background:rgba(255,255,255,.07);border-radius:10px;padding:8px 10px}
+.chiffres span{display:block;font-size:13.5px;color:#E2D3C6}
+.chiffres b{font-size:18px}
+#alerte{max-width:640px;margin:12px auto 0;border-radius:10px;padding:10px 12px;font-weight:600;display:none}
+#alerte.bas{display:block;background:#4A3416;color:#FFD99A}
+#alerte.depasse{display:block;background:#4E211C;color:#FFC2BB}
+
+main{max-width:640px;margin:0 auto;padding:0 16px}
+.zone{margin-top:24px}
+h2{font-size:20px;margin:0 0 12px}
+.raccourcis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.raccourci{min-height:68px;border:1px solid var(--trait);background:var(--carte);border-radius:var(--r);
+  padding:10px 14px;text-align:left;display:flex;flex-direction:column;justify-content:center}
+.raccourci b{font-weight:600}
+.raccourci span{color:var(--doux)}
+.raccourci:active{transform:scale(.98)}
+.autre{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:8px;margin-top:10px}
+input[type=text],input[inputmode]{min-height:48px;border:1px solid var(--trait);background:var(--carte);
+  border-radius:var(--r);padding:10px 12px;width:100%;font-size:17px}
+.btn{min-height:48px;border:0;border-radius:var(--r);padding:0 18px;background:var(--espresso);color:var(--lait);font-weight:600}
+.btn.creux{background:var(--carte);color:var(--encre);border:1px solid var(--trait)}
+.autre .btn{grid-column:1/-1}
+.vide{background:var(--carte);border:1px dashed var(--trait);border-radius:var(--r);padding:16px;color:var(--doux)}
+.liste{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r);padding:0 4px 0 14px}
+.ligne{display:grid;grid-template-columns:3.4em minmax(0,1fr) auto 44px;gap:8px;align-items:center;
+  min-height:52px;border-bottom:1px solid var(--trait)}
+.ligne:last-child{border-bottom:0}
+.ligne .date{color:var(--doux)}
+.ligne .mt{font-weight:600;text-align:right}
+.suppr{width:44px;height:44px;border:0;background:none;color:var(--doux);font-size:24px;border-radius:10px}
+details{margin-top:24px;border-top:1px solid var(--trait);padding-top:8px}
+summary{font-size:20px;font-weight:700;min-height:48px;display:flex;align-items:center}
+.hist{display:grid;grid-template-columns:8.5em minmax(0,1fr) 5.6em;gap:10px;align-items:center;min-height:40px}
+.barre{height:12px;border-radius:6px;background:var(--trait);overflow:hidden}
+.barre i{display:block;height:100%;background:var(--menthe)}
+.barre i.trop{background:var(--rouge)}
+.hist b{text-align:right}
+label{display:block;color:var(--doux);margin:12px 0 4px}
+.reglage{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) 44px;gap:8px;margin-bottom:8px}
+.boutons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#fichier{display:none}
+.note{color:var(--doux);font-size:15px;margin-top:14px}
+.msg{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:var(--espresso);color:var(--lait);border-radius:14px;padding:8px 8px 8px 16px;
+  display:flex;gap:12px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.25);width:max-content;max-width:min(420px,calc(100% - 32px));z-index:50}
+.msg[hidden]{display:none}
+.msg span{flex:1}
+.msg button{flex:none;white-space:nowrap;min-height:44px;border:0;border-radius:10px;padding:0 14px;background:var(--menthe);color:#0E241B;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div class="entete">
+    <h1>Al banco</h1>
+    <div class="mois">
+      <button id="prec" aria-label="Mois précédent">‹</button>
+      <button id="suiv" aria-label="Mois suivant">›</button>
+    </div>
+  </div>
+  <p id="titreMois">—</p>
+  <div class="anneau" role="img" id="anneau" aria-label="">
+    <svg viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="18"/>
+      <circle id="arc" cx="100" cy="100" r="84" fill="none" stroke="#2FB98A" stroke-width="18" stroke-linecap="round"/>
+    </svg>
+    <div class="centre"><div id="reste" class="num">—</div><div id="resteSous">restants</div></div>
+  </div>
+  <div class="chiffres">
+    <div><span>Dépensé</span><b id="depense" class="num">—</b></div>
+    <div><span id="parJourLib">Par jour</span><b id="parJour" class="num">—</b></div>
+    <div><span>Jours restants</span><b id="jours" class="num">—</b></div>
+  </div>
+  <div id="alerte"></div>
+</header>
+
+<main>
+  <section class="zone" id="zoneAjout">
+    <h2>Ajouter</h2>
+    <div class="raccourcis" id="raccourcis"></div>
+    <form class="autre" id="formAutre">
+      <input type="text" id="autreNom" placeholder="Autre dépense" aria-label="Libellé" autocomplete="off">
+      <input type="text" id="autreMt" inputmode="decimal" placeholder="Montant €" aria-label="Montant en euros" autocomplete="off">
+      <button class="btn">Ajouter</button>
+    </form>
+  </section>
+
+  <section class="zone">
+    <h2 id="titreListe">Ce mois-ci</h2>
+    <div id="liste"></div>
+  </section>
+
+  <details>
+    <summary>Mois précédents</summary>
+    <div id="historique"></div>
+  </details>
+
+  <details id="detReglages">
+    <summary>Réglages</summary>
+    <form id="formReglages">
+      <label for="budget">Budget mensuel (€)</label>
+      <input type="text" id="budget" inputmode="decimal" autocomplete="off">
+      <label>Raccourcis</label>
+      <div id="listeRaccourcis"></div>
+      <div class="boutons">
+        <button type="button" class="btn creux" id="ajoutRaccourci">Nouveau raccourci</button>
+        <button class="btn">Enregistrer</button>
+      </div>
+    </form>
+    <label>Données</label>
+    <div class="boutons">
+      <button class="btn creux" id="sauvegarde">Sauvegarder</button>
+      <button class="btn creux" id="restaurer">Restaurer</button>
+      <input type="file" id="fichier" accept="application/json,.json">
+    </div>
+    <p class="note">Tes dépenses restent sur cet appareil et ne partent nulle part. Pour changer de téléphone, utilise Sauvegarder puis Restaurer.</p>
+  </details>
+</main>
+
+<div class="msg" id="msg" hidden><span id="msgTexte"></span><button id="msgAnnuler" hidden>Annuler</button></div>
+
+<script>
+"use strict";
+{
+/* ===== Stockage local ===== */
+let db = null;
+function ouvrirDB(){
+  return new Promise((ok,ko)=>{
+    const r = indexedDB.open("alBanco",1);
+    r.onupgradeneeded = e=>{
+      const d = e.target.result;
+      if(!d.objectStoreNames.contains("depenses")) d.createObjectStore("depenses",{keyPath:"id"});
+      if(!d.objectStoreNames.contains("reglages")) d.createObjectStore("reglages",{keyPath:"id"});
+    };
+    r.onsuccess = ()=>ok(r.result);
+    r.onerror   = ()=>ko(r.error);
+  });
+}
+const magasin = (nom,mode="readonly")=> db.transaction(nom,mode).objectStore(nom);
+const tous    = nom => new Promise((ok,ko)=>{ const r=magasin(nom).getAll(); r.onsuccess=()=>ok(r.result); r.onerror=()=>ko(r.error); });
+const ecrire  = (nom,o)=> new Promise((ok,ko)=>{ const r=magasin(nom,"readwrite").put(o); r.onsuccess=()=>ok(); r.onerror=()=>ko(r.error); });
+const effacer = (nom,id)=> new Promise((ok,ko)=>{ const r=magasin(nom,"readwrite").delete(id); r.onsuccess=()=>ok(); r.onerror=()=>ko(r.error); });
+
+/* ===== Utilitaires ===== */
+const $ = id => document.getElementById(id);
+const euro = n => new Intl.NumberFormat("fr-BE",{style:"currency",currency:"EUR"}).format(n||0);
+const nomMois = d => new Intl.DateTimeFormat("fr-BE",{month:"long",year:"numeric"}).format(d);
+const cleMois = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+const aujourdhui = ()=>{ const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nombre = v => parseFloat(String(v).replace(",",".").replace(/[^\d.]/g,""));
+const majuscule = s => s.replace(/^./,c=>c.toUpperCase());
+
+let depenses = [];
+let reglages = { id:"principal", budget:200, raccourcis:[
+  {nom:"Café", montant:2.8}, {nom:"Boisson au club", montant:3.5}, {nom:"Repas au club", montant:15}
+]};
+let moisAffiche = new Date(); moisAffiche.setDate(1);
+let derniere = null, minuteur;
+
+function dire(texte, annulable){
+  $("msgTexte").textContent = texte;
+  $("msgAnnuler").hidden = !annulable;
+  $("msg").hidden = false;
+  clearTimeout(minuteur);
+  minuteur = setTimeout(()=>{ $("msg").hidden = true; derniere = null; }, annulable ? 5000 : 2600);
+}
+
+/* ===== Affichage ===== */
+function rendre(){
+  const cle = cleMois(moisAffiche), estCourant = cle === cleMois(new Date());
+  const liste = depenses.filter(d=>d.date.slice(0,7)===cle).sort((a,b)=> b.date.localeCompare(a.date) || b.cree-a.cree);
+  const total = liste.reduce((s,d)=>s+d.montant,0);
+  const budget = reglages.budget, reste = budget - total;
+  const part = budget>0 ? Math.max(0,Math.min(1,reste/budget)) : 0;
+  const finMois = new Date(moisAffiche.getFullYear(), moisAffiche.getMonth()+1, 0).getDate();
+  const joursRestants = estCourant ? finMois - new Date().getDate() + 1 : 0;
+
+  $("titreMois").textContent = majuscule(nomMois(moisAffiche));
+  $("suiv").disabled = estCourant;
+  const C = 2*Math.PI*84, arc = $("arc");
+  arc.setAttribute("stroke-dasharray", C);
+  arc.setAttribute("stroke-dashoffset", C*(1-part));
+  arc.setAttribute("stroke", reste<0 ? "#D8453A" : part<0.2 ? "#E39A1E" : "#2FB98A");
+  $("reste").textContent = euro(Math.abs(reste));
+  $("resteSous").textContent = reste>=0 ? "restants sur "+euro(budget) : "au-delà de "+euro(budget);
+  $("anneau").setAttribute("aria-label", reste>=0 ? `Il reste ${euro(reste)} sur ${euro(budget)}` : `Budget dépassé de ${euro(-reste)}`);
+  $("depense").textContent = euro(total);
+  $("parJourLib").textContent = estCourant ? "Par jour" : "Budget";
+  $("parJour").textContent = estCourant ? (reste>0 ? euro(reste/joursRestants) : euro(0)) : euro(budget);
+  $("jours").textContent = joursRestants;
+
+  const al = $("alerte");
+  al.className = ""; al.textContent = "";
+  if(reste<0){ al.className="depasse"; al.textContent = "Budget dépassé de "+euro(-reste)+"."; }
+  else if(estCourant && part<0.2){ al.className="bas"; al.textContent = "Plus que "+euro(reste)+" pour "+joursRestants+" jour"+(joursRestants>1?"s":"")+"."; }
+
+  $("zoneAjout").hidden = !estCourant;
+  $("titreListe").textContent = estCourant ? "Ce mois-ci" : "Dépenses de "+nomMois(moisAffiche);
+
+  $("raccourcis").innerHTML = reglages.raccourcis.map((r,i)=>
+    `<button class="raccourci" data-i="${i}"><b>${esc(r.nom)}</b><span class="num">${euro(r.montant)}</span></button>`).join("");
+
+  $("liste").innerHTML = liste.length
+    ? `<div class="liste">${liste.map(d=>`<div class="ligne"><span class="date num">${d.date.slice(8,10)}/${d.date.slice(5,7)}</span><span>${esc(d.nom)}</span><span class="mt num">${euro(d.montant)}</span><button class="suppr" data-suppr="${d.id}" aria-label="Supprimer ${esc(d.nom)}">×</button></div>`).join("")}</div>`
+    : `<div class="vide">Aucune dépense enregistrée${estCourant?" ce mois-ci":""}.</div>`;
+
+  const moisPasses = [...new Set(depenses.map(d=>d.date.slice(0,7)))].filter(k=>k<cleMois(new Date())).sort().reverse();
+  $("historique").innerHTML = moisPasses.length ? moisPasses.map(k=>{
+    const t = depenses.filter(d=>d.date.slice(0,7)===k).reduce((s,d)=>s+d.montant,0);
+    const [a,m] = k.split("-");
+    const w = budget>0 ? Math.min(100, t/budget*100) : 0;
+    return `<div class="hist"><span>${esc(majuscule(nomMois(new Date(+a,+m-1,1))))}</span><div class="barre"><i class="${t>budget?"trop":""}" style="width:${w}%"></i></div><b class="num">${euro(t)}</b></div>`;
+  }).join("") : `<p class="note">L'historique apparaîtra le mois prochain.</p>`;
+}
+
+function rendreReglages(){
+  $("budget").value = String(reglages.budget).replace(".",",");
+  $("listeRaccourcis").innerHTML = reglages.raccourcis.map((r,i)=>
+    `<div class="reglage"><input type="text" data-nom="${i}" value="${esc(r.nom)}" aria-label="Nom du raccourci" autocomplete="off"><input type="text" inputmode="decimal" data-mt="${i}" value="${String(r.montant).replace(".",",")}" aria-label="Montant" autocomplete="off"><button type="button" class="suppr" data-retirer="${i}" aria-label="Retirer ce raccourci">×</button></div>`).join("");
+}
+
+/* ===== Actions ===== */
+async function ajouter(nom, montant){
+  if(!(montant>0)){ dire("Indique un montant."); return; }
+  const d = { id:uid(), date:aujourdhui(), cree:Date.now(), nom:nom||"Autre", montant:Math.round(montant*100)/100 };
+  depenses.push(d); await ecrire("depenses", d);
+  derniere = d.id; rendre();
+  dire(d.nom+" · "+euro(d.montant)+" ajouté", true);
+}
+
+$("raccourcis").onclick = e=>{
+  const b = e.target.closest("[data-i]"); if(!b) return;
+  const r = reglages.raccourcis[+b.dataset.i]; ajouter(r.nom, r.montant);
+};
+$("formAutre").onsubmit = e=>{
+  e.preventDefault();
+  const m = nombre($("autreMt").value);
+  if(m>0){ ajouter($("autreNom").value.trim(), m); $("autreNom").value=""; $("autreMt").value=""; }
+  else dire("Indique un montant.");
+};
+$("liste").onclick = async e=>{
+  const b = e.target.closest("[data-suppr]"); if(!b) return;
+  depenses = depenses.filter(d=>d.id!==b.dataset.suppr);
+  await effacer("depenses", b.dataset.suppr); rendre(); dire("Dépense supprimée.");
+};
+$("msgAnnuler").onclick = async ()=>{
+  if(!derniere) return;
+  depenses = depenses.filter(d=>d.id!==derniere);
+  await effacer("depenses", derniere); derniere = null;
+  rendre(); dire("Ajout annulé.");
+};
+$("prec").onclick = ()=>{ moisAffiche.setMonth(moisAffiche.getMonth()-1); rendre(); };
+$("suiv").onclick = ()=>{ moisAffiche.setMonth(moisAffiche.getMonth()+1); rendre(); };
+
+function lireReglagesSaisis(){
+  return reglages.raccourcis.map((r,i)=>({
+    nom: (document.querySelector(`[data-nom="${i}"]`).value.trim() || r.nom),
+    montant: (nombre(document.querySelector(`[data-mt="${i}"]`).value) || r.montant)
+  }));
+}
+$("ajoutRaccourci").onclick = ()=>{ reglages.raccourcis = lireReglagesSaisis(); reglages.raccourcis.push({nom:"Nouveau", montant:1}); rendreReglages(); };
+$("listeRaccourcis").onclick = e=>{
+  const b = e.target.closest("[data-retirer]"); if(!b) return;
+  reglages.raccourcis = lireReglagesSaisis(); reglages.raccourcis.splice(+b.dataset.retirer,1); rendreReglages();
+};
+$("formReglages").onsubmit = async e=>{
+  e.preventDefault();
+  const b = nombre($("budget").value);
+  if(b>0) reglages.budget = b;
+  reglages.raccourcis = lireReglagesSaisis();
+  await ecrire("reglages", reglages);
+  rendreReglages(); rendre(); dire("Réglages enregistrés.");
+};
+
+function telecharger(nom, contenu){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([contenu],{type:"application/json"}));
+  a.download = nom; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+$("sauvegarde").onclick = ()=>{
+  telecharger(`sauvegarde-al-banco-${aujourdhui()}.json`, JSON.stringify({app:"al-banco", version:1, reglages, depenses}));
+  dire("Sauvegarde créée.");
+};
+$("restaurer").onclick = ()=> $("fichier").click();
+$("fichier").onchange = async e=>{
+  const f = e.target.files[0]; e.target.value = ""; if(!f) return;
+  try{
+    const p = JSON.parse(await f.text());
+    if(p.app!=="al-banco" || !Array.isArray(p.depenses)) throw 0;
+    if(!confirm(`Restaurer ${p.depenses.length} dépense(s) ? Celles qui portent le même identifiant seront remplacées, les autres conservées.`)) return;
+    for(const d of p.depenses){ await ecrire("depenses", d); }
+    if(p.reglages){ reglages = Object.assign({}, p.reglages, {id:"principal"}); await ecrire("reglages", reglages); }
+    depenses = await tous("depenses");
+    rendreReglages(); rendre(); dire(p.depenses.length+" dépense(s) restaurée(s).");
+  }catch(err){ dire("Fichier illisible — choisis une sauvegarde créée par l'appli."); }
+};
+
+/* ===== Démarrage ===== */
+(async ()=>{
+  try{
+    db = await ouvrirDB();
+    depenses = await tous("depenses");
+    const r = (await tous("reglages")).find(x=>x.id==="principal");
+    if(r) reglages = r;
+    if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+    rendreReglages(); rendre();
+  }catch(e){
+    rendreReglages(); rendre();
+    $("zoneAjout").hidden = true;
+    $("liste").innerHTML = `<div class="vide"><strong>Le stockage est indisponible.</strong> Ouvre l'appli depuis son adresse web ou depuis l'écran d'accueil de l'iPhone pour que les dépenses soient conservées.</div>`;
+  }
+})();
+
+if("serviceWorker" in navigator && location.protocol==="https:"){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+}
+</script>
+</body>
+</html>

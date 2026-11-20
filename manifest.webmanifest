@@ -1,0 +1,17 @@
+{
+  "name": "Al banco",
+  "short_name": "Al banco",
+  "description": "Budget mensuel des cafés et des dépenses au club",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5EEE3",
+  "theme_color": "#2B1C15",
+  "lang": "fr-BE",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
