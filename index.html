@@ -6,16 +6,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Al banco">
-<meta name="theme-color" content="#2B1C15">
+<meta name="theme-color" content="#1F4E6B">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <title>Al banco</title>
 <style>
 :root{
-  --encre:#2B1C15; --papier:#F5EEE3; --carte:#FFFDF9; --trait:#E3D6C6;
-  --doux:#7A6758; --espresso:#2B1C15; --lait:#FBF6F0; --menthe:#2FB98A;
-  --ambre:#E39A1E; --rouge:#D8453A; --r:12px;
+  --encre:#2B2118; --papier:#FBF5EA; --carte:#FFFDF8; --trait:#E8DCC4;
+  --doux:#5E5040; --espresso:#1F4E6B; --lait:#FBF5EA; --menthe:#F1E6D3;
+  --ambre:#F0A93B; --rouge:#E36B5A; --r:12px;
 }
 *{box-sizing:border-box;min-width:0}
 html,body{margin:0;padding:0}
@@ -27,32 +27,32 @@ body{
 }
 button,input{font:inherit;color:inherit}
 button{cursor:pointer}
-:focus-visible{outline:3px solid var(--menthe);outline-offset:2px}
+:focus-visible{outline:3px solid #8F5A1B;outline-offset:2px}
 .num{font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* Bandeau : l'anneau du reste */
 header{background:var(--espresso);color:var(--lait);
-  padding:calc(18px + env(safe-area-inset-top)) 18px 22px}
+  padding:calc(22px + env(safe-area-inset-top)) 18px 22px}
 .entete{display:flex;justify-content:space-between;align-items:center;gap:8px;max-width:640px;margin:0 auto}
 header h1{font-size:28px;line-height:1.1;margin:0;font-weight:700}
 .mois{display:flex;align-items:center;gap:4px}
 .mois button{width:44px;height:44px;border:0;border-radius:10px;background:rgba(255,255,255,.08);color:var(--lait);font-size:22px}
 .mois button:disabled{opacity:.3}
-#titreMois{font-size:17px;color:#E2D3C6;text-align:center;margin:4px 0 0}
+#titreMois{font-size:17px;color:rgba(251,245,234,.8);text-align:center;margin:4px 0 0}
 .anneau{position:relative;width:min(72vw,260px);aspect-ratio:1;margin:14px auto 6px}
 .anneau svg{width:100%;height:100%;transform:rotate(-90deg)}
 #arc{transition:stroke-dashoffset .6s ease}
 @media (prefers-reduced-motion:reduce){#arc{transition:none}}
 .anneau .centre{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
 #reste{font-size:clamp(34px,10vw,46px);font-weight:700;line-height:1}
-#resteSous{font-size:15px;color:#E2D3C6;margin-top:6px}
+#resteSous{font-size:15px;color:rgba(251,245,234,.8);margin-top:6px}
 .chiffres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:640px;margin:10px auto 0}
 .chiffres div{background:rgba(255,255,255,.07);border-radius:10px;padding:8px 10px}
-.chiffres span{display:block;font-size:13.5px;color:#E2D3C6}
+.chiffres span{display:block;font-size:13.5px;color:rgba(251,245,234,.8);white-space:nowrap}
 .chiffres b{font-size:18px}
 #alerte{max-width:640px;margin:12px auto 0;border-radius:10px;padding:10px 12px;font-weight:600;display:none}
-#alerte.bas{display:block;background:#4A3416;color:#FFD99A}
-#alerte.depasse{display:block;background:#4E211C;color:#FFC2BB}
+#alerte.bas{display:block;background:#F0A93B;color:#2B2118}
+#alerte.depasse{display:block;background:#9B2C1F;color:#FBF5EA}
 
 main{max-width:640px;margin:0 auto;padding:0 16px}
 .zone{margin-top:24px}
@@ -94,7 +94,7 @@ label{display:block;color:var(--doux);margin:12px 0 4px}
   display:flex;gap:12px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.25);width:max-content;max-width:min(420px,calc(100% - 32px));z-index:50}
 .msg[hidden]{display:none}
 .msg span{flex:1}
-.msg button{flex:none;white-space:nowrap;min-height:44px;border:0;border-radius:10px;padding:0 14px;background:var(--menthe);color:#0E241B;font-weight:600}
+.msg button{flex:none;white-space:nowrap;min-height:44px;border:0;border-radius:10px;padding:0 14px;background:var(--menthe);color:#1F4E6B;font-weight:600}
 </style>
 </head>
 <body>
@@ -109,15 +109,15 @@ label{display:block;color:var(--doux);margin:12px 0 4px}
   <p id="titreMois">—</p>
   <div class="anneau" role="img" id="anneau" aria-label="">
     <svg viewBox="0 0 200 200">
-      <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="18"/>
-      <circle id="arc" cx="100" cy="100" r="84" fill="none" stroke="#2FB98A" stroke-width="18" stroke-linecap="round"/>
+      <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="18"/>
+      <circle id="arc" cx="100" cy="100" r="84" fill="none" stroke="#F1E6D3" stroke-width="18" stroke-linecap="round"/>
     </svg>
     <div class="centre"><div id="reste" class="num">—</div><div id="resteSous">restants</div></div>
   </div>
   <div class="chiffres">
     <div><span>Dépensé</span><b id="depense" class="num">—</b></div>
     <div><span id="parJourLib">Par jour</span><b id="parJour" class="num">—</b></div>
-    <div><span>Jours restants</span><b id="jours" class="num">—</b></div>
+    <div><span>Jours</span><b id="jours" class="num">—</b></div>
   </div>
   <div id="alerte"></div>
 </header>
@@ -231,7 +231,7 @@ function rendre(){
   const C = 2*Math.PI*84, arc = $("arc");
   arc.setAttribute("stroke-dasharray", C);
   arc.setAttribute("stroke-dashoffset", C*(1-part));
-  arc.setAttribute("stroke", reste<0 ? "#D8453A" : part<0.2 ? "#E39A1E" : "#2FB98A");
+  arc.setAttribute("stroke", reste<0 ? "#E36B5A" : part<0.2 ? "#F0A93B" : "#F1E6D3");
   $("reste").textContent = euro(Math.abs(reste));
   $("resteSous").textContent = reste>=0 ? "restants sur "+euro(budget) : "au-delà de "+euro(budget);
   $("anneau").setAttribute("aria-label", reste>=0 ? `Il reste ${euro(reste)} sur ${euro(budget)}` : `Budget dépassé de ${euro(-reste)}`);
