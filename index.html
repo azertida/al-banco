@@ -146,8 +146,10 @@ label{display:block;color:var(--doux);margin:12px 0 4px}
   <details id="detReglages">
     <summary>Réglages</summary>
     <form id="formReglages">
-      <label for="budget">Budget mensuel (€)</label>
+      <label for="budget">Budget mensuel habituel (€)</label>
       <input type="text" id="budget" inputmode="decimal" autocomplete="off">
+      <label for="budgetMois" id="libBudgetMois">Budget de ce mois uniquement (€)</label>
+      <input type="text" id="budgetMois" inputmode="decimal" autocomplete="off">
       <label>Raccourcis</label>
       <div id="listeRaccourcis"></div>
       <div class="boutons">
@@ -200,6 +202,7 @@ const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const nombre = v => parseFloat(String(v).replace(",",".").replace(/[^\d.]/g,""));
 const majuscule = s => s.replace(/^./,c=>c.toUpperCase());
+const budgetDu = cle => (reglages.budgetsMois && reglages.budgetsMois[cle]) || reglages.budget;
 
 let depenses = [];
 let reglages = { id:"principal", budget:200, raccourcis:[
@@ -221,7 +224,7 @@ function rendre(){
   const cle = cleMois(moisAffiche), estCourant = cle === cleMois(new Date());
   const liste = depenses.filter(d=>d.date.slice(0,7)===cle).sort((a,b)=> b.date.localeCompare(a.date) || b.cree-a.cree);
   const total = liste.reduce((s,d)=>s+d.montant,0);
-  const budget = reglages.budget, reste = budget - total;
+  const budget = budgetDu(cle), reste = budget - total;
   const part = budget>0 ? Math.max(0,Math.min(1,reste/budget)) : 0;
   const finMois = new Date(moisAffiche.getFullYear(), moisAffiche.getMonth()+1, 0).getDate();
   const joursRestants = estCourant ? finMois - new Date().getDate() + 1 : 0;
@@ -259,13 +262,18 @@ function rendre(){
   $("historique").innerHTML = moisPasses.length ? moisPasses.map(k=>{
     const t = depenses.filter(d=>d.date.slice(0,7)===k).reduce((s,d)=>s+d.montant,0);
     const [a,m] = k.split("-");
-    const w = budget>0 ? Math.min(100, t/budget*100) : 0;
-    return `<div class="hist"><span>${esc(majuscule(nomMois(new Date(+a,+m-1,1))))}</span><div class="barre"><i class="${t>budget?"trop":""}" style="width:${w}%"></i></div><b class="num">${euro(t)}</b></div>`;
+    const bm = budgetDu(k);
+    const w = bm>0 ? Math.min(100, t/bm*100) : 0;
+    return `<div class="hist"><span>${esc(majuscule(nomMois(new Date(+a,+m-1,1))))}</span><div class="barre"><i class="${t>bm?"trop":""}" style="width:${w}%"></i></div><b class="num">${euro(t)}</b></div>`;
   }).join("") : `<p class="note">L'historique apparaîtra le mois prochain.</p>`;
 }
 
 function rendreReglages(){
   $("budget").value = String(reglages.budget).replace(".",",");
+  const cm = cleMois(new Date()), bm = reglages.budgetsMois && reglages.budgetsMois[cm];
+  $("libBudgetMois").textContent = "Budget de " + nomMois(new Date()) + " uniquement (€)";
+  $("budgetMois").value = bm ? String(bm).replace(".",",") : "";
+  $("budgetMois").placeholder = "Habituel : " + euro(reglages.budget);
   $("listeRaccourcis").innerHTML = reglages.raccourcis.map((r,i)=>
     `<div class="reglage"><input type="text" data-nom="${i}" value="${esc(r.nom)}" aria-label="Nom du raccourci" autocomplete="off"><input type="text" inputmode="decimal" data-mt="${i}" value="${String(r.montant).replace(".",",")}" aria-label="Montant" autocomplete="off"><button type="button" class="suppr" data-retirer="${i}" aria-label="Retirer ce raccourci">×</button></div>`).join("");
 }
@@ -318,6 +326,9 @@ $("formReglages").onsubmit = async e=>{
   e.preventDefault();
   const b = nombre($("budget").value);
   if(b>0) reglages.budget = b;
+  const cm = cleMois(new Date()), bm = nombre($("budgetMois").value);
+  reglages.budgetsMois = reglages.budgetsMois || {};
+  if(bm>0) reglages.budgetsMois[cm] = bm; else delete reglages.budgetsMois[cm];
   reglages.raccourcis = lireReglagesSaisis();
   await ecrire("reglages", reglages);
   rendreReglages(); rendre(); dire("Réglages enregistrés.");
